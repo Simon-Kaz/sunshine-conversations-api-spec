@@ -73,78 +73,10 @@ tags:
   - name: Changelog
     description: All notable changes to the API will be referenced in the [v2 API changelog](https://docs.smooch.io/guide/v2-api-changelog/).
   - name: Webhooks
-    description: |
-      Endpoints for managing webhooks associated to a Sunshine Conversations Connect integration or a custom integration. Webhooks are a fantastic way to extend the Sunshine Conversations platform beyond the built-in feature set. You can use webhooks to build your own Sunshine Conversations chat clients, to integrate more deeply with your favorite CRM, or to build a bot.
-      A webhook can only operate within the scope of a single Sunshine Conversations app.
-      <aside class="notice">An app is limited to 10 webhooks. A webhook can subscribe to multiple trigger events. We recommend using a single webhook entry that includes all the required events.</aside>
-
-      ## Webhook Triggers
-      When a webhook trigger is triggered, a POST request will be made to the URL configured in your webhook object along with a JSON payload specific for the event type.
-
-      | Trigger                 | Description                       |
-      | ----------------------  | -------------------------- |
-      | client:add     | When initiating a channel link or when an SDK client is created.    |
-      | client:remove     | When a client is removed. This can happen when:<br/>1. directly using the API<br/>2. removing the client using the SDK<br/>3. transferring a client due to a channel link<br/>4. failing or cancelling a channel link   |
-      | client:update     | When a client is updated. This can happen when:<br/>1. a channel finds a user that matches the information provided<br/>2. a client is activated<br/>3. a user unsubscribes from a conversation or blocks the app    |
-      | conversation:create     | When a new conversation is created.    |
-      | conversation:join     | When a new participant joins a `sdkGroup` conversation.    |
-      | conversation:leave     | When a participant leaves a `sdkGroup` conversation.     |
-      | conversation:remove  | When a conversation is deleted. |
-      | conversation:message  | When a new message was sent in the conversation. |
-      | conversation:message:delivery:channel  | When a message is successfully delivered to a channel. |
-      | conversation:message:delivery:failure  | When a new message fails to be delivered in the conversation. |
-      | conversation:message:delivery:user  | When a new message is successfully delivered to a user. |
-      | conversation:postback  | When a user clicks on a postback action button. |
-      | conversation:read  | When a user has read the conversation. |
-      | conversation:referral | When a user is referred to a conversation. See the <a href="https://docs.smooch.io/guide/conversation-referrals/">conversation referrals</a> guide for more details. |
-      | conversation:typing  | When a user starts or stops typing. |
-      | switchboard:acceptControl | When a switchboard integration accepts control of a conversation. |
-      | switchboard:acceptControl:failure   | When control of a conversation fails to be accepted by a switchboard integration. |
-      | switchboard:offerControl  | When a switchboard integration has been offered control of the conversation. |
-      | switchboard:offerControl:failure | When control of a conversation can't be offered to another switchboard integration. |
-      | switchboard:passControl | When a switchboard integration gives control of the conversation to another switchboard integration. |
-      | switchboard:passControl:failure | When changing a switchboard integration to active fails. |
-      | user:merge         | When two or more users are merged into one. |
-      | user:update         | When a user is updated. (Currently, when a user's identification is updated.)|
-
-      ## Securing Sunshine Conversations Webhooks
-      When a webhook is created, a shared secret will be generated for it. The secret can be used to determine the veracity of a request to your webhook route. It is included as an `X-API-Key` header with each webhook request sent to the target URL.
-      That secret is available in the response to the POST request used to generate the webhook, or through a GET request to the webhook route.
-
-      ## Retry policy
-
-      A webhook call will be attempted up to 5 times over a 15 minute window. The attempts will happen at an exponentially increasing interval if the target responds with anything but a success (2XX) or a [non-recoverable error](#non-recoverable-errors). If no response is received within 20 seconds, the call will be considered a failure and will also be reattempted.
-
-      ### Non-recoverable Errors
-      The following status codes are deemed to be non-recoverable and Sunshine Conversations will not reattempt a call when receiving a response with them:
-
-      - 400: The target exists, but can’t process the payload.
-      - 401: The target is behind authentication or doesn’t recognize the webhook secret.
-      - 403: Sunshine Conversations should not be calling the target.
-      - 404: The target doesn’t exist.
-      - 406: The target exists, and rejected the webhook intentionally.
   - name: Sunshine Conversations Connect
     x-displayName: Sunshine Conversations Connect
-    description: |
-      Sunshine Conversations has a rapidly growing partner ecosystem which helps you unlock messaging in your product or service and lets customers find you alongside complementary partners. If you're interested in becoming a partner, tell us what you're building with Sunshine Conversations using our [partner application](https://docs.smooch.io/guide/becoming-an-integration-partner/) and we'll provision you with everything you'll need to build your end of the OAuth flow using Sunshine Conversations Connect. In the meantime the OAuth endpoints detailed below can be tested by impersonating Shoplifter, a partnership we built for testing purposes.
-
-      # Add to Sunshine Conversations Button
-      ```html
-      <a href="https://app.smooch.io/oauth/authorize?client_id=shoplifter&response_type=code"><img alt="Add to Sunshine Conversations" height="40" width="278" src="https://cdn.smooch.io/images/add_to_sunshine_conversations.png" srcset="https://cdn.smooch.io/images/add_to_sunshine_conversations.png 1x, https://cdn.smooch.io/images/add_to_sunshine_conversations@2x.png 2x"/></a>
-      ```
-      This HTML template can be used to place an "Add to Sunshine Conversations" button on your website.
-
-      <p class="add-to-sunshine-conversations-button">
-          <a href="https://app.smooch.io/oauth/authorize?client_id=shoplifter&response_type=code"><img alt="Add to Sunshine Conversations" height="40" width="278" src="https://cdn.smooch.io/images/add_to_sunshine_conversations.png" srcset="https://cdn.smooch.io/images/add_to_sunshine_conversations.png 1x, https://cdn.smooch.io/images/add_to_sunshine_conversations@2x.png 2x"/></a>
-      </p>
-
-      # Sample Application
-      An open source sample application implementing Sunshine Conversations Connect has been created to help demonstrate how to get it working. Give [Shoplifter](https://sunco-shoplifter.zendesk.com/) a try.
-
-      The source code is available [here](https://github.com/zendesk/sunshine-conversations-shoplifter).
   - name: OAuth Endpoints
     x-displayName: OAuth Endpoints
-    description: "The scope of an issued access token is integration scope. This allows API calls to be made to a specific Sunshine Conversations app on behalf of an integration, identified by the integration’s clientId. The access token grants permission to get and create users and conversations associated with the app. The token also grants permission to create webhooks, however only webhooks created for the integration will be visible. An access token with integration scope cannot see or modify webhooks that were created by other integrations, for example.\n\n| API\t      | Access\t|\n| --------  | ------- |\n| [/v2/apps/:appId/users/\\*](#tag/Users)\t| Yes\t|\n| [/v2/apps/:appId/conversations/\\*](#tag/Conversations)\t| Yes\t|\n| [/v2/apps/:appId/integrations/me/webhooks/\\*](#tag/Webhooks)\t| Yes\t|\n| [/v2/apps/:appId/switchboards/\\*](#tag/Switchboards) | No |\n| [/v2/apps/\\*](#tag/Apps) | No |\n"
 paths:
   /v2/apps:
     post:
@@ -392,9 +324,6 @@ paths:
         - Attachments
       summary: Upload Attachment
       operationId: uploadAttachment
-      description: |
-        Upload an attachment to Sunshine Conversations to use in future messages. Files are uploaded using the multipart/form-data content type. Use the returned mediaUrl to send a file, image or carousel message.
-        <aside class="notice">Note that Sunshine Conversations limits the size and type of file you can upload to the platform. See the <a href="https://docs.smooch.io/guide/validating-files">file validation</a> guide for more details.</aside>
       security:
         - basicAuth:
             - integration
@@ -427,10 +356,6 @@ paths:
         - Attachments
       summary: Delete Attachment
       operationId: deleteAttachment
-      description: |
-        Remove an attachment uploaded to Sunshine Conversations through the Upload attachment API.
-        See [Attachments for Messages](#section/Attachments-for-Messages) to have attachments automatically deleted when deleting messages, conversations or users.
-        <aside class="notice">Note that deleted attachments can remain available on our CDN’s cache up to 15 minutes after the delete call.</aside>
       security:
         - basicAuth:
             - integration
@@ -463,9 +388,6 @@ paths:
         - Attachments
       summary: Generate Media Token
       operationId: generateMediaJsonWebToken
-      description: |
-        Generates a media JWT for a list of attachment paths. This media token is a prerequisite for setting the cookie needed to visualize a private attachment.
-        <aside class="notice">Note you have the ability to allow files using different rules, see <a href="https://docs.smooch.io/guide/private-attachments">Private Attachments</a> for more details.</aside>
       security:
         - basicAuth:
             - app
@@ -494,9 +416,6 @@ paths:
         - Attachments
       summary: Set Cookie
       operationId: setCookie
-      description: |
-        With the media JWT retrieved, pass it in the header of the below request as it’s authorization in order to set a cookie in the user’s browser corresponding to the path within the media JWT.
-        The expiration date of this cookie will match the expiration date of the media JWT. This cookie will be needed to visualize a private attachment.
       security:
         - bearerAuth:
             - mediaToken
@@ -839,22 +758,11 @@ paths:
         '423':
           description: |
             Message limit reached
-            <aside class="notice">To learn more about the conversation message limit, consult the section in the introduction linked <a href="#section/Introduction/Conversation-Size-Limits">here</a>.</aside>
     get:
       tags:
         - Messages
       summary: List Messages
       operationId: listMessages
-      description: |
-        List all messages for a particular conversation. This API is paginated through
-        [cursor pagination](#section/Introduction/API-pagination-and-records-limits), in the _backwards_ direction, with the
-        most recent (i.e. last) page of messages being returned by default. The `hasMore` flag indicates whether more messages
-        exist in the direction you are currently paginating through. To page backwards in the history, use the `beforeCursor` or follow the `prev`
-        link. The page size limit is fixed at 100 messages per page.
-
-        ```shell
-        /v2/apps/:appId/conversations/:conversationId/messages?page[before]=5f32b88acf6bf25073b2be56
-        ```
       security:
         - basicAuth:
             - integration
